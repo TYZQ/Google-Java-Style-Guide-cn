@@ -1,0 +1,758 @@
+\documentclass[cn,11pt,chinese]{elegantbook}
+
+\title{Google Java Style Guide}
+\subtitle{谷歌Java编程风格指南}
+
+\author{\href{https://github.com/cushon}{cushon} \& \href{https://github.com/shicks}{shicks}}
+\institute{\href{https://github.com/google/styleguide}{Google Style Guides Program}}
+\date{May 23, 2018}
+\version{5.2}
+\bioinfo{译者}{陶冶}
+
+\extrainfo{工欲善其事，必先利其器。—— 《论语·卫灵公》}
+
+\logo{Octocat.png}
+\cover{cover.jpg}
+
+% 本文档命令
+\usepackage{array}
+\newcommand{\ccr}[1]{\makecell{{\color{#1}\rule{1cm}{1cm}}}}
+
+\begin{document}
+
+\maketitle
+\frontmatter
+
+\chapter*{写在前面}
+\markboth{Introduction}{前言}
+
+软件构造课的前置语言是JAVA，工欲善其事，必先利其器，故吾认为，在学习JAVA之前更重要的是了解JAVA的编程规范，在华为，谷歌，阿里，苹果等一众公司中，吾选择了谷歌的规范(\href{https://google.github.io/styleguide/javaguide.html}{Google Java Style Guide})作为蓝本(因为谷歌的编程规范成体系、历史久远且在\href{https://github.com/google/styleguide}{Github}上开源)，目前网上的译本大多是\href{http://hawstein.com/}{Hawstein}大佬于January 20, 2014译的\href{http://hawstein.com/2014/01/20/google-java-style/}{2.2版本},大佬翻译的很好，不过由于版本更替，该版本有些地方已不适用。现特将最新版(\href{https://google.github.io/styleguide/javaguide.html}{May 23, 2018})翻译，欢迎指正\footnote{\href{mailto:1180300204@stu.hit.edu.cn}{1180300204@stu.hit.edu.cn}}。
+
+\vskip 1.5cm
+
+\begin{flushright}
+陶冶\footnote{哈尔滨工业大学\quad 计算机学院}\\
+April 23, 2020
+\end{flushright}
+
+\tableofcontents
+%\listofchanges
+
+\mainmatter
+\chapter{引言}
+此文档旨在\textbf{完整}的定义Google对于Java源码的编程规范。当且仅当Java源码完全遵守本文档时，此源码才被称为Google风格(\emph{Google Style})。
+
+与其他(Google)的编程规范一样，本文档不仅阐述了因审美引起的格式问题，同时也阐述了其他形式的公约以及编程标准。但是，本文档仅专注于我们普遍遵守的\textbf{强制规范}(hard-and-fast rules)，并避免给出界定模糊的\emph{建议}(对人或编译工具来说)。
+
+
+\section{术语说明}
+
+本文档中，除非特意指明，否则一般遵守下列表述：
+
+\begin{enumerate}
+  \item \emph{类}(class)：指一个普通类，枚举类，接口或者注解(\textcolor{red}{@interface})；
+  \item \emph{成员}(memeber)：指嵌套类，类变量(field)，方法或构造函数。也即，除初始化函数(initializers)和注释外的所有类中的顶级内容；
+  \item \emph{注释}(comment)：总是指\emph{实现用}(implementation)注释\footnote{实现用注释是指：如\textcolor{red}{/* A comment */}或\textcolor{red}{// Another comment}。而文档用注释/Javadoc则是指\textcolor{red}{/** This is a javadoc */}。具体可以参看\href{https://www.oracle.com/java/technologies/javase/codeconventions-comments.html}{Oracle的文档}。}。本文档使用更常用的短语``Javadoc''代替``文档用注释''(documentation comment)短语。
+\end{enumerate}
+
+其他文档术语将在本文档中陆续出现。
+
+\section{指南说明}
+
+本文档中的示例代码是\textbf{非规范化}(non-normative)的。即，示例代码是遵循Google风格的，但这并不表示这是唯一的表达方式。示例代码中可选的格式优化不应该被归于强制规范(，所以并未归入此文档中)。
+
+\chapter{源码文件基础守则}
+
+\section{文件名}
+源码文件名由区分大小写的顶层类名(仅有1个)，和\textcolor{red}{.java}后缀构成。
+
+\section{文件编码：UTF-8}
+源文件编码格式为UTF-8。
+
+\section{特殊字符}
+\subsection{白空格字符(Whitespace characters)}
+除换行符外，\textbf{ASCII的横向空格字符}(0x20) 是在源码文件中唯一出现的白空格字符。这也就意味着：
+\begin{enumerate}
+	\item 所有其他的位于字符或字符串中的白空格字符应当转义。
+	\item 制表符(Tab)\textbf{不能}用于缩进。
+\end{enumerate}
+
+\subsection{特殊转义序列}
+若任意字符中包含\href{https://docs.oracle.com/javase/tutorial/java/data/characters.html}{特殊转义序列}(\textcolor{red}{\textbackslash b}, \textcolor{red}{\textbackslash t}, \textcolor{red}{\textbackslash n}, \textcolor{red}{\textbackslash f}, \textcolor{red}{\textbackslash r}, \textcolor{red}{"}, \textcolor{red}{'}及\textcolor{red}{\textbackslash \textbackslash})，则应直接使用该序列而非使用其八进制形式(如\textcolor{red}{\textbackslash 012})或其Unicode转义(如\textcolor{red}{\textbackslash u000a})。
+
+\subsection{非ASCII字符}
+对于余下的非ASCII字符，可使用实际Unicode字符(如$\infty$)或等效Unicode转义(如\textcolor{red}{\textbackslash u221e})表示。尽管(本文档)强烈不推荐在字符串和注释外出现Unicode转义，(实际中)如何取舍仅取决于哪个更容易阅读和容易理解。
+
+\begin{remark}
+	在使用Unicode转义，或直接使用Unicode字符时，添加解释性的注释会很有帮助。
+\end{remark}
+
+例如：
+\begin{table}[!htb]
+	\centering
+	\begin{tabular}{|l|l|}
+		\hline
+		\textbf{示例} & \textbf{讨论}\\
+		\hline
+		String unitAbbrev = "$\mu $s";  & 最佳：无需注释也很清晰明了。 \\
+		\hline
+		String unitAbbrev = "\textbackslash 03bcs"; // "$\mu $s" & 可行，但是没有理由这样做。 \\
+		\hline
+		String unitAbbrev = "\textbackslash 03bcs"; // Greek letter mu, "s"   & 可行，但是很别扭，而且容易出错。 \\
+		\hline
+		String unitAbbrev = "\textbackslash 03bcs"; & 较差：读代码的人不知道这是什么。 \\
+		\hline
+		return '\textbackslash ufeff' + content; // byte order mark  &  好：对不可打印的字符使用转义，并进行必要的注释。 \\
+		\hline
+	\end{tabular}
+\end{table}
+
+\begin{remark}
+	永远不要因为害怕程序不能正确处理非ASCII字符而降低源码可读性。如果程序未能正确处理非ASCII字符，那么该程序是损坏的并应着手修复。
+\end{remark}
+
+\chapter{源文件结构}
+一个源文件应\textbf{按照顺序}，包含以下内容：
+\begin{enumerate}
+	\item 如果包含许可或版权信息，应显示
+	\item 所处的包的声明(Package statement)
+	\item 导包声明(import statements)
+	\item 有且仅有1个顶层的类
+\end{enumerate}
+
+\textbf{仅使用一个}空行去分割以上出现的内容。
+\section{如果包含许可或版权信息，应显示}
+若文件中包含许可或版权信息，应在此处显示。
+
+\section{所处的包的声明}
+所处的包声明\textbf{不允许自动换行}。该声明不受每行字符限制(见4.4，每行限制100个字符)。
+
+\section{导包声明}
+\subsection{禁止通配符导入}
+(Google Style)\textbf{不使用通配符导入}，无论是在静态导入中，或其他(非静态)导入。
+
+\subsection{不允许自动换行}
+导包声明\textbf{不允许自动换行}。该声明不受每行字符限制(见4.4，每行限制100个字符)。
+
+\subsection{顺序与空格}
+导入顺序遵循以下原则：
+\begin{enumerate}
+	\item 所有静态导入在同一区块
+	\item 所有非静态导入在同一区块
+\end{enumerate}
+
+如果静态导入和非静态导入同时出现，使用一个空行分割两个区块。其他导包声明之间无空格。
+
+每个区块的导包语句按照名字的ASCII顺序排序。(\textbf{注意}：这并不意味着整个导包语句都按照ASCII顺序排序，因为(在ASCII表中) `.'出现在`;'前)
+
+\section{禁止静态导入类}
+\subsection{有且仅有一个顶层类声明}
+每个顶层类都处在(以他类命名的)源文件顶层。
+
+\subsection{类内容的顺序}
+如何排列你的类成员与初始化函数是一件很容易学习的事情。但是，排列的方法不止一种；不同的类有不同的内容排序方法。
+
+重要的是，每个类都应使用\textbf{某种逻辑排序}，这样代码维护者在被(审阅代码时)问到的话就可以有充足的理由解释清楚。例如，新的方法不仅仅处于习惯性的放在类的末尾，放在末尾意味着此种顺序产生了``按日期添加''的非逻辑排序。
+
+\subsection{重载：不要分割开}
+当一个类有多个构造函数，或多个方法重名时，他们应该一个接一个的挨个卸下来，中间不能有任何其他代码(private方法也不行)。
+
+\chapter{格式}
+\textbf{术语说明}：\emph{块状结构}(block-like constructs)指类的主体，方法或构造函数。注意，在4.8.3.1节 数组初始化声明(array initializers)中，数组初始化声明可以被选择性的视为块状结构。
+
+\section{大括号}
+\subsection{可用可不用的时候必用大括号}
+在\textcolor{red}{if}, \textcolor{red}{else}, \textcolor{red}{for}, \textcolor{red}{do}, \textcolor{red}{while}语句中，即便无内部语句或只有一句，也必须使用大括号。
+
+\subsection{非空语句块：使用K\&R风格}
+对于\emph{非空}语句块和块状结构，使用Kernighan and Ritchie风格(\href{https://blog.codinghorror.com/new-programming-jargon/}{埃及括号(Egyptian brackets)})的大括号：
+\begin{itemize}
+	\item 左大括号前不换行。
+	\item 左大括号后换行。
+	\item 右大括号前换行。
+	\item 仅当结束一段声明、函数、构造函数、非匿名类时，右大括号后才换行。比如，当右大括号后有\textcolor{red}{else}或逗号时，右大括号后就不换行。
+\end{itemize}
+
+示例：
+\begin{lstlisting}[language=java]
+return () -> {
+	while (condition()) {
+		method();
+	}
+};
+
+return new MyClass() {
+	@Override public void method() {
+		if (condition()) {
+			try {
+				something();
+			} catch (ProblemException e) {
+				recover();
+			}
+		} else if (otherCondition()) {
+			somethingElse();
+		} else {
+			lastThing();
+		}
+	}
+};
+\end{lstlisting}
+
+枚举类有几个例外，详情参见4.8.1节 枚举类
+
+\subsection{空语句块：有可能被简化}
+空语句块或块状结构可以使用K\&R风格(在4.1.2节中)、除此之外，除非该空语句块是多段语句块的一部分(如\textcolor{red}{if/else}或\textcolor{red}{try/catch/finally})，空语句块的左右大括号也可以不加字符，不加换行的紧挨在一起(\textcolor{red}{\{\}})。
+
+示例：
+\begin{lstlisting}[language=java]
+// 可以接受
+void doNothing() {}
+
+// 同样可以接受
+void doNothingElse() {
+}
+\end{lstlisting}
+
+\begin{lstlisting}[language=java]
+// 不可接受：多段语句块中不允许存在简化过的空语句块
+try {
+	doSomething();
+} catch (Exception e) {}
+\end{lstlisting}
+
+\section{区块缩进：+2空格}
+每当新增一个新的区块或块状结构时，缩进+2空格。当该区块结束后，缩进回到之前的缩进水平(即-2空格)。缩进区域对于所处区块的所有代码和注释都均适用。(见4.1.2节 非空语句块：使用K\&R风格)
+
+\section{每行仅一条语句}
+每个语句结束后都应换行。
+
+\section{每行限制：100个字符}
+Java源码每行限制100个字符。``字符''是指任何一个Unicode码位。除以下特殊情况外，任何一行超过了(100个字符后)都必须换行，详情参见4.5节 换行。 每个Unicode码位算作一个字符，无论该字符显示出来(相较一般)更宽或更窄。例如，如果使用全角字符，你可能需要在到达100个字符限制前提早换行。
+
+例外：
+\begin{enumerate}
+	\item 当情况不允许时(例如，Javadoc中出现的长URL，或者一个很长的JSNI(JavaScript Native Interface)方法引用)。
+	\item \textcolor{red}{package}和\textcolor{red}{声明(见3.2节 所处包的声明和3.3节 导包声明)}。
+	\item 注释中可能需要粘贴到shell中的命令。
+\end{enumerate}
+
+\section{换行}
+\emph{术语说明}：当代码可以合法占据一行，但却分割成若干行时，此行为成为换行。
+
+并没有全面的，确定性的公式定义每种情况下如何准确的换行。很多情况下，对于同一行代码，都会存在若干种合理的分割方法。
+
+\begin{note}
+	尽管一般情况下换行是为了防止超出每行的字符限制，但有时候尽管并未超出此限制，作者也会处于谨慎将代码分割成多行。
+\end{note}
+
+\begin{remark}
+	(将原本的代码块)提炼成一个方法或一个局部变量可免除换行的苦恼。
+\end{remark}
+
+\subsection{在何处换行}
+换行的一个主旨是：倾向于在更高的语法层上断句。并且：
+\begin{enumerate}
+	\item 当换行出现在\emph{非赋值符号}处时，在该符号\emph{前}换行。(注意这点与Google其他语言的coding style不太一致，比如C++，JavaScript。)
+	\begin{itemize}
+		\item 此条也适用于以下``似操作符''的符号：
+		\begin{itemize}
+			\item 点分隔符(\textcolor{red}{.})
+			\item 双冒号代表的方法引用(\textcolor{red}{::})
+			\item 类型绑定中的与(\textcolor{red}{\&})符号(\textcolor{red}{<T extends Foo \& Bar>})
+			\item \textcolor{red}{catch}区块中的或(\textcolor{red}{|})符号(\textcolor{red}{catch (FooException | BarException e)})
+		\end{itemize}
+	\end{itemize}
+	\item 当换行出现在\emph{赋值符号}处时，通常在该符号\emph{后}换行，但(在前或者在后换行)都可以接受。
+	\begin{itemize}
+		\item 此条也适用于\textcolor{red}{for}(foreach)语句中的``似赋值符号''冒号(\textcolor{red}{:})。  
+	\end{itemize}
+	\item 一个方法或构造函数的名字总是与其左小括号(\textcolor{red}{(})连在一起。
+	\item 逗号(\textcolor{red}{,})与其前面的内容留在同一行。
+	\item 在Lambda表达式中，一行从不会被断开，除了如果Lambda表达式的主体由单个非支持表达式组成，则可能会在箭头之后立即出现断开。
+\end{enumerate}
+
+示例：
+\begin{lstlisting}[language=java]
+MyLambda<String, Long, Object> lambda =
+	(String label, Long value, Object obj) -> {
+		...
+	};
+
+Predicate<String> predicate = str ->
+	longExpressionInvolving(str);
+\end{lstlisting}
+
+\begin{note}
+	换行的主要目的是要有清晰的代码，而不必是适合最少行数的代码。
+\end{note}
+
+\subsection{自动换行时缩进至少+4个空格}
+自动换行时，第一行后面的每一行(每个连续行)从原始行缩进至少增加4个空格。
+
+当存在连续自动换行时，缩进可能会多缩进不只4个空格(语法元素存在多级时)。一般而言，两个连续行使用相同的缩进当且仅当它们开始于同级语法元素。
+
+章节4.6.3水平对齐一节中指出，不鼓励使用可变数目的空格来对齐前面行的符号。
+
+\section{空白}
+\subsection{垂直空白}
+以下情况需要使用一个空行：
+\begin{enumerate}
+	\item 类内连续的成员之间：字段，构造函数，方法，嵌套类，静态初始化块，实例初始化块。
+	\begin{itemize}
+		\item \textbf{例外}：两个连续字段之间的空行(在它们之间没有其他代码)是可选的。这样的空白行根据需要用于创建字段的逻辑分组。
+		\item \textbf{例外}：枚举常量之间的空行，章节4.8.1将介绍。
+	\end{itemize}
+	\item 在函数体内，语句的逻辑分组间使用空行。
+	\item 类内的第一个成员前或最后一个成员后的空行是可选的。(既不鼓励也不反对这样做，视个人喜好而定。)
+	\item 要满足本文档中其他节的空行要求。(比如章节3：源文件结构及章节3.3：import语句)
+\end{enumerate}
+
+多个连续的空行是允许的，但没有必要这样做(也不鼓励这样做)。
+
+\subsection{水平空白}
+除了语言需求和其它规则，并且除了文字，注释和Javadoc用到单个空格，单个ASCII空格仅出现在以下几个地方：
+\begin{enumerate}
+	\item 分隔任何保留字(如：\textcolor{red}{if, for catch})与紧随其后的左括号(\textcolor{red}{(})。
+	\item 分隔任何保留字(如\textcolor{red}{else, catch})与其前面的右大括号(\textcolor{red}{\}})。
+	\item 在任何左大括号前(\textcolor{red}{\{})，两个例外：
+	\begin{itemize}
+		\item \textcolor{red}{@SomeAnnotation(\{a, b\})}(不使用空格)。
+		\item \textcolor{red}{String[][] x = \{\{``foo''\}\};}(大括号间没有空格)。
+	\end{itemize}
+	\item 在任何二元或三元运算符的两侧。这也适用于以下``类运算符''符号：
+	\begin{itemize}
+		\item 类型界限中的\&符(\textcolor{red}{<T extends Foo \& Bar>})。
+		\item catch块中的管道符号(\textcolor{red}{catch (FooException | BarException e})。
+		\item foreach语句中的冒号(\textcolor{red}{:})。
+	\end{itemize}
+	\item 在\textcolor{red}{, : ;}及右括号(\textcolor{red}{)})后
+	\item 如果在一条语句后做注释，则双斜杠(//)两边都要空格。这里可以允许多个空格，但没有必要。
+	\item 类型和变量之间：\textcolor{red}{List<String> list}。
+	\item 数组初始化中，大括号内的空格是可选的，即\textcolor{red}{new int[] \{5, 6\}}和\textcolor{red}{new int[] \{ 5, 6 \}}都是可以的。
+\end{enumerate}
+
+此规则不应理解为在行的开始或结束处要求或禁止额外的空格; 它只涉及行的\emph{内部空格}。
+
+\subsection{水平对齐：不做要求}
+\textbf{术语说明}：\emph{水平对齐}指的是通过增加可变数量的空格来使某一行的字符与上一行的相应字符对齐。
+
+这是允许的，但Google编程风格对此\textbf{不做要求}。即使对于已经使用水平对齐的代码，我们也不需要去\emph{保持}这种风格。
+
+以下示例先展示未对齐的代码，然后是对齐的代码：
+\begin{lstlisting}[language=java]
+private int x; // this is fine
+private Color color; // this too
+
+private int   x;      // permitted, but future edits
+private Color color;  // may leave it unaligned
+\end{lstlisting}
+
+\begin{remark}
+	对齐可增加代码可读性，但它为日后的维护带来问题。考虑未来某个时候，我们需要修改一堆对齐的代码中的一行。 这可能导致原本很漂亮的对齐代码变得错位。很可能它会提示你调整周围代码的空白来使这一堆代码重新水平对齐(比如程序员想保持这种水平对齐的风格)， 这就会让你做许多的无用功，增加了reviewer的工作并且可能导致更多的合并冲突。
+\end{remark}
+
+\section{用小括号来限定组：推荐}
+除非作者和reviewer都认为去掉小括号也不会使代码被误解，或是去掉小括号能让代码更易于阅读，否则我们不应该去掉小括号。 我们没有理由假设读者能记住整个Java运算符优先级表。
+
+\section{具体结构}
+\subsection{枚举类}
+枚举常量间用逗号隔开，换行可选。 还允许附加空行(通常只有一个)。 这是一个样例：
+\begin{lstlisting}[language=java]
+private enum Answer {
+	YES {
+		@Override public String toString() {
+			return "yes";
+		}
+	},
+
+	NO,
+	MAYBE
+}
+\end{lstlisting}
+
+没有方法和文档的枚举类可写成数组初始化的格式(详见章节4.8.3.1)。
+\begin{lstlisting}[language=java]
+private enum Suit { CLUBS, HEARTS, SPADES, DIAMONDS }
+\end{lstlisting}
+
+由于枚举类也是一个类，因此所有适用于其它类的格式规则也适用于枚举类。
+
+\subsection{变量声明}
+\subsubsection{每次只声明一个变量}
+不要使用组合声明，比如\textcolor{red}{int a, b;}。
+
+\subsubsection{需要时才声明，并尽快进行初始化}
+不要在一个代码块的开头把局部变量一次性都声明了(这是c语言的做法)，而是在第一次需要使用它时才声明。 局部变量在声明时最好就进行初始化，或者声明后尽快进行初始化。
+
+\subsection{数组}
+\subsubsection{数组初始化：可写成块状结构}
+数组初始化可以写成块状结构，比如，下面的写法都是OK的：
+\begin{lstlisting}[language=java]
+new int[] {
+	0, 1, 2, 3 
+}
+
+new int[] {
+	0,
+	1,
+	2,
+	3
+}
+
+new int[] {
+	0, 1,
+	2, 3
+}
+
+new int[]{0, 1, 2, 3}
+\end{lstlisting}
+
+\subsubsection{非C风格的数组声明}
+中括号是类型的一部分：\textcolor{red}{String[] args}，而非\textcolor{red}{String args[]}。
+
+\subsection{switch语句}
+术语说明：switch块的大括号内是一个或多个语句组。每个语句组包含一个或多个switch标签(\textcolor{red}{case FOO:}或\textcolor{red}{default:})，后面跟着一条或多条语句。
+
+\subsubsection{缩进}
+与其它块状结构一致，switch块中的内容缩进为2个空格。
+
+每个switch标签后新起一行，再缩进2个空格，写下一条或多条语句。
+
+\subsubsection{Fall-through：注释}
+在一个switch块内，每个语句组要么通过\textcolor{red}{break}, \textcolor{red}{continue}, \textcolor{red}{return}或抛出异常来终止，要么通过一条注释来说明程序将继续执行到下一个语句组， 任何能表达这个意思的注释都是可行的(典型的是用\textcolor{red}{// fall through})。这个特殊的注释并不需要在最后一个语句组中出现。示例：
+\begin{lstlisting}[language=java]
+switch (input) {
+	case 1:
+	case 2:
+		prepareOneOrTwo();
+		// fall through
+	case 3:
+		handleOneTwoOrThree();
+		break;
+	default:
+		handleLargeNumber(input);
+}
+\end{lstlisting}
+
+注意，在\textcolor{red}{case 1}后面不需要注释，只有在语句组的末尾需要。
+
+\subsubsection{\textcolor{red}{default}的情况要写出来}
+每个switch语句都包含一个\textcolor{red}{default}语句组，即使它什么代码也不包含。
+
+\textbf{例外}：\textcolor{red}{enum}类型的switch语句可以省略\textcolor{red}{default}语句组，\emph{如果}它包括覆盖该类型的\emph{所有}可能值的显式情况。这使IDE或其他静态分析工具能够在错过任何情况时发出警告。
+
+\subsection{注解(Annotations)}
+注解紧跟在文档块后面，应用于类、方法和构造函数，一个注解独占一行。这些换行不属于自动换行(第4.5节，自动换行)，因此缩进级别不变。例如：
+\begin{lstlisting}[language=java]
+@Override
+@Nullable
+public String getNameIfPresent() { ... }
+\end{lstlisting}
+
+\textbf{例外}：单个的注解可以和签名的第一行出现在同一行。例如：
+\begin{lstlisting}[language=java]
+@Override public int hashCode() { ... }
+\end{lstlisting}
+
+应用于字段的注解紧随文档块出现，应用于字段的多个注解允许与字段出现在同一行。例如：
+\begin{lstlisting}[language=java]
+@Partial @Mock DataLoader loader;
+\end{lstlisting}
+
+参数和局部变量注解没有特定规则。
+
+\subsection{注释}
+本节讨论实现注释。 Javadoc在章节7 Javadoc中单独讲解。
+
+任何换行符之前可以有任意空格，然后是实现注释。这样的注释使该行非空白。
+
+\subsubsection{块注释风格}
+块注释与其周围的代码在同一缩进级别。它们可以是/* $\cdots$ */风格，也可以是// $\cdots$风格。对于多行的/* $\cdots$ */注释，后续行必须从*开始， 并且与前一行的*对齐。
+\begin{lstlisting}[language=java]
+/*
+ * This is
+ * okay.
+ */
+
+// And so
+// is this.
+
+/* Or you can
+ * even do this. */
+\end{lstlisting}
+
+注释不要封闭在由星号或其它字符绘制的框架里。
+
+\begin{remark}
+	当编写多行注释时，如果您希望自动代码格式化程序在必要时重新换行(段落样式)，请使用/* $\cdots$ */样式。大多数格式化程序不会在// $\cdots$样式注释块中重新换行。
+\end{remark}
+
+\subsection{修饰符}
+类和成员的修饰符如果存在，则按Java语言规范中推荐的顺序出现。
+\begin{lstlisting}[language=java]
+public protected private abstract default static final transient volatile synchronized native strictfp
+\end{lstlisting}
+
+\subsection{数字字面量}
+\textcolor{red}{long}数值使用大写\textcolor{red}{L}后缀，而非小写(以避免与数字\textcolor{red}{1}混淆)。例如，\textcolor{red}{3000000000L}而不是\textcolor{red}{3000000000l}。
+
+\chapter{命名约定}
+\section{对所有标识符都通用的规则}
+标识符只能使用ASCII字母和数字，因此每个有效的标识符名称都能匹配正则表达式\textcolor{red}{\textbackslash w+}。
+
+在Google Style中，特殊的前缀或后缀不使用在示例中看到的如\textcolor{red}{name\_}, \textcolor{red}{mName}, \textcolor{red}{s\_name}和\textcolor{red}{kName}。
+
+\section{标识符类型的规则}
+\subsection{包名}
+包名称都是小写，连续的单词连接在一起(无下划线)。如\textcolor{red}{com.example.deepspace}而非\textcolor{red}{com.example.deepSpace}或\textcolor{red}{com.example.deep\_space}。
+
+\subsection{类名}
+类名都以\textcolor{red}{UpperCamelCase}风格编写。
+
+类名通常是名词或名词短语，接口名称有时可能是形容词或形容词短语。现在还没有特定的规则或行之有效的约定来命名注解类型。
+
+类名通常是名词或名词短语(如：\textcolor{red}{Character}或\textcolor{red}{ImmutableList})，接口名称通常也是名词或名词短语(如\textcolor{red}{List})，但有时可能是形容词或形容词短语(如\textcolor{red}{Readable})。
+
+现在还没有特定的规则或行之有效的约定来命名注解类型。
+
+测试类从它们正在测试的类的名称开始命名，并以\textcolor{red}{Test}结束。例如，\textcolor{red}{HashTest}或\textcolor{red}{HashIntegrationTest}。
+
+\subsection{方法名}
+方法名都以\textcolor{red}{lowerCamelCase}风格编写。
+
+方法名通常是动词或动词短语。例如，\textcolor{red}{sendMessage}或\textcolor{red}{stop}。
+
+下划线可能出现在JUnit测试方法名称中，用以分隔名称的逻辑。一个典型的模式是：\textcolor{red}{test<MethodUnderTest>\_<state>}，例如\textcolor{red}{testPop\_emptyStack}。尚未出现给测试方法命名的标准命名准则。
+
+\subsection{常量名}
+常量名命名模式为\textcolor{red}{CONSTANT\_CASE}，全部字母大写，用下划线分隔单词。那，到底什么算是一个常量？
+
+常数是静态final字段，其内容是不可变的，并且其方法没有可检测的函数副作用。这包括基元，字符串，不可变类型和不可变类型的不可变集合。如果任何实例的观测状态可以改变，它就不是一个常量。静态final字段不一定都是常量。例如：
+\begin{lstlisting}[language=java]
+// Constants
+static final int NUMBER = 5;
+static final ImmutableList<String> NAMES = ImmutableList.of("Ed", "Ann");
+static final ImmutableMap<String, Integer> AGES = ImmutableMap.of("Ed", 35, "Ann", 32);
+static final Joiner COMMA_JOINER = Joiner.on(','); // because Joiner is immutable
+static final SomeMutableType[] EMPTY_ARRAY = {};
+enum SomeEnum { ENUM_CONSTANT }
+
+// Not constants
+static String nonFinal = "non-final";
+final String nonStatic = "non-static";
+static final Set<String> mutableCollection = new HashSet<String>();
+static final ImmutableSet<SomeMutableType> mutableElements = ImmutableSet.of(mutable);
+static final ImmutableMap<String, SomeMutableType> mutableValues =
+	ImmutableMap.of("Ed", mutableInstance, "Ann", mutableInstance2);
+static final Logger logger = Logger.getLogger(MyClass.getName());
+static final String[] nonEmptyArray = {"these", "can", "change"};
+\end{lstlisting}
+
+这些名字通常是名词或名词短语。
+
+\subsection{非常量字段名}
+非常量字段名(静态或其他)以\textcolor{red}{lowerCamelCase}风格编写。
+
+这些名字通常是名词或名词短语。例如，\textcolor{red}{computedValues}或\textcolor{red}{index}。
+
+\subsection{参数名}
+参数名以\textcolor{red}{lowerCamelCase}风格编写。
+
+应该避免公共方法中的单字符参数名称。
+
+\subsection{局部变量名}
+局部变量名以\textcolor{red}{lowerCamelCase}风格编写。
+
+即使局部变量是final和不可改变的，也不应该把它示为常量，自然也不能用常量的规则去命名它。
+
+\subsection{类型变量名}
+类型变量可用以下两种风格之一进行命名：
+\begin{itemize}
+	\item 单个的大写字母，后面可以跟一个数字(如：\textcolor{red}{E}, \textcolor{red}{T}, \textcolor{red}{X}, \textcolor{red}{T2})。
+	\item 以类命名方式(5.2.2节)，后面加个大写的\textcolor{red}{T}(如：\textcolor{red}{RequestT}, \textcolor{red}{FooBarT})。
+\end{itemize}
+
+\section{CamelCase：定义}
+有时不止一种合理的方式可以将短语转换为CamelCase模式，例如首字母缩略词或不寻常的结构，如``IPv6''或``iOS''。为了提高可预测性，Google Style指定(尽量)使用以下确定性方案。
+
+从名称的文本形式开始：
+\begin{enumerate}
+	\item 将短语转换为纯ASCII并删除任何省略号。例如：``Müller's algorithm''可改为``Muellers algorithm''。
+	\item 以空格和任何剩余的标点符号(通常为连字符)将结果划分为单词。
+	\begin{itemize}
+		\item \emph{推荐}： 如果有任何词在常用的情况下已经具有常规的CamelCase外观，将其拆分为其组成部分(例如，``AdWords''成为``ad words'')。 注意，诸如``iOS''这样的词本身不是真正的骆驼情况；它违反任何惯例，因此本建议不适用。
+	\end{itemize}
+	\item 将单词(包括首字母缩略词)第一个字符大写其他字符全小写：
+	\begin{itemize}
+		\item 将所有字符全大写
+		\item 除第一个字符外，将所有字符全小写
+	\end{itemize}
+	\item 最后，将所有单词连接成一个词。
+\end{enumerate}
+
+注意，原始单词样式几乎完全被忽略。示例：
+\begin{table}[!htb]
+	\centering
+	\begin{tabular}{|l|l|l|}
+		\hline
+		\textbf{Prose form} & \textbf{Correct} & \textbf{Incorrect}\\
+		\hline
+		"XML HTTP request" & XmlHttpRequest & XMLHTTPRequest\\
+		\hline
+		"new customer ID" & newCustomerId & newCustomerID \\
+		\hline
+		"inner stopwatch" & innerStopwatch & innerStopWatch\\
+		\hline
+		"supports IPv6 on iOS?" & supportsIpv6OnIos & supportsIPv6OnIOS\\
+		\hline
+		"YouTube importer" & \makecell{YouTubeImporter \\ YoutubeImporter*} & \\
+		\hline
+	\end{tabular}
+\end{table}
+
+*可接受，但不推荐。
+
+\begin{note}
+	一些单词在英语中有不明确的连字符：例如"nonempty"和"non-empty"都是正确的，所以方法名称checkNonempty和checkNonEmpty也都是正确的。
+\end{note}
+
+\chapter{编程实践}
+\section{\textcolor{red}{@Override}：能用则用}
+只要是合法的，就把\textcolor{red}{@Override}注解给用上。这包括重写超类方法的类方法，实现接口方法的类方法，以及重定义超接口方法的接口方法。
+
+\textbf{例外}： 当父方法为\textcolor{red}{@Deprecated}时，可以省略\textcolor{red}{@Override}。
+
+\section{捕获的异常：不能忽视}
+除下面的例子，对捕获的异常不做响应极少是正确的。(典型的响应方式是打印日志，如果不行，则把它当作一个\textcolor{red}{AssertionError}重新抛出。)
+
+如果它确实是不需要在catch块中做任何响应，需要做注释加以说明(如下面的例子)。
+\begin{lstlisting}[language=java]
+try {
+	int i = Integer.parseInt(response);
+	return handleNumericResponse(i);
+} catch (NumberFormatException ok) {
+	// it's not numeric; that's fine, just continue
+}
+return handleTextResponse(response);
+\end{lstlisting}
+
+\textbf{例外}：在测试中，如果一个捕获的异常被命名为expected，则它可以被不加注释地忽略。下面是一种非常常见的情形，用以确保所测试的方法会抛出一个期望中的异常， 因此在这里就没有必要加注释。
+
+\begin{lstlisting}[language=java]
+try {
+	emptyStack.pop();
+	fail();
+} catch (NoSuchElementException expected) {
+}
+\end{lstlisting}
+
+\section{静态成员：使用类进行调用}
+使用类名调用静态的类成员，而不是具体某个对象或表达式。
+
+\begin{lstlisting}[language=java]
+Foo aFoo = ...;
+Foo.aStaticMethod(); // good
+aFoo.aStaticMethod(); // bad
+somethingThatYieldsAFoo().aStaticMethod(); // very bad
+\end{lstlisting}
+
+\section{Finalizers: 禁用}
+
+极少会去重载\textcolor{red}{Object.finalize}。
+
+\begin{remark}
+	不要这么做，不得已非要这么做的话，请先仔细阅读并理解\href{https://www.google.com/search?hl=zh-CN&tbo=p&tbm=bks&q=isbn:8131726592}{Effective Java Item 7: "Avoid Finalizers"}，非常小心，最后还是不要这么做。
+\end{remark}
+
+\chapter{Javadoc}
+\section{格式}
+\subsection{一般形式}
+Javadoc块的基本格式如下所示：
+\begin{lstlisting}[language=java]
+/**
+ * Multiple lines of Javadoc text are written here,
+ * wrapped normally...
+ */
+public int method(String p1) { ... }
+\end{lstlisting}
+
+或者是以下单行形式：
+\begin{lstlisting}[language=java]
+/** An especially short bit of Javadoc. */
+\end{lstlisting}
+
+基本形式总是可以接受的。当整个Javadoc块(包括注释标记)可以放在单个行上时，可以将其替换为单行形式。注意，这只适用于没有块标签的情形，如\textcolor{red}{@return}。
+
+\subsection{段落}
+空行(即仅包含对齐的前导星号(\textcolor{red}{\textasteriskcentered})的行)出现在段落之间，并在Javadoc标记(如果存在)之前。除了第一个段落，每个段落第一个单词前都有标签\textcolor{red}{<p>}，并且它和第一个单词间没有空格。
+
+\section{摘要片段}
+每个类或成员的Javadoc以一个简短的摘要片段开始。这个片段是非常重要的，在某些情况下，它是唯一出现的文本，比如在类和方法索引中。
+
+这只是一个小片段，可以是一个名词短语或动词短语，但不是一个完整的句子。它不会以\textcolor{red}{A {@code Foo} is a $\cdots$}或\textcolor{red}{This method returns $\cdots$}开头, 它也不会是一个完整的祈使句，如\textcolor{red}{Save the record $\cdots$}。然而，由于开头大写及被加了标点，它看起来就像是个完整的句子。
+
+\begin{remark}
+	一个常见的错误是把简单的Javadoc写成\textcolor{red}{/** @return the customer ID */}，这是不正确的。它应该写成\textcolor{red}{/** Returns the customer ID. */}。
+\end{remark}
+
+\section{哪里需要使用Javadoc}
+至少在每个public类及它的每个public和protected成员处使用Javadoc，以下是一些例外。
+
+也可能存在其他Javadoc内容，如章节7.3.3所述。
+
+\subsection{例外：不言自明的方法}
+对于简单明显的方法如\textcolor{red}{getFoo}，Javadoc是可选的。这种情况下除了写"Returns the foo"，确实也没有什么值得写了。
+
+\begin{note}
+	如果有一些相关信息是需要读者了解的，那么以上的示例不应作为忽视这些信息的理由。例如，对于名为\textcolor{red}{getCanonicalName}， 的方法，不要省略其文档(文档可以仅仅是\textcolor{red}{/** Returns the canonical name. */})，可能读者并不明白"canonical name"具体指什么。
+\end{note}
+
+\subsection{例外：重载}
+如果一个方法重载了超类中的方法，那么Javadoc并非必需的。
+
+\subsection{非必需Javadoc\footnote{译者著：英文版此为7.3.4(缺失7.3.3)，但是在Mar 22, 2014更新的2.2版中是有7.3.3的。应该是作者失误}}
+对于包外不可见的类和方法，如有需要，也是要使用Javadoc的。
+
+如果一个注释是用来定义一个类，方法，字段的整体目的或行为，那么这个注释应该写成Javadoc(使用\textcolor{red}{/**})。
+
+不一定要求非必需的Javadoc遵循章节7.1.2、章节7.1.3和章节7.2的格式化规则，当然也是建议遵循的。
+
+\chapter{版本更新历史}
+将更新历史记录于此，查看更新时间节点。
+
+\datechange{2020/04/23}{V1.4正式发布}
+\begin{change}
+	\item 修正了一些翻译失误，录入错误。
+	\item \href{https://github.com/TYZQ/Google-Java-Style-Guide-cn}{\LaTeX 版}正式于GitHub发布。
+	\item 修改了CSDN上的版本
+
+\end{change}
+
+\datechange{2020.04.22}{V1.3正式发布}
+\begin{change}
+	\item 正式于CSDN发布。
+	\item 启动\LaTeX 编译计划(采用\TeX Live2019+\TeX studio配合\href{https://github.com/ElegantLaTeX/ElegantBook}{ElegantBook模板})。
+\end{change}
+
+\datechange{2020/04/17}{V1.2}
+\begin{change}
+	\item 与Hawstein大佬的版本进行对比，修改了若干翻译不当。
+	\item 美化Markdown版本。
+\end{change}
+
+\datechange{2020/04/15}{V1.1}
+\begin{change}
+	\item 修改了若干翻译错误。
+	\item Markdown编排完毕。
+\end{change}
+
+\datechange{2020/04/13}{全部翻译完毕，记事本V1.0出世}
+
+\datechange{2020/04/02}{至第四章格式翻译完毕毕}
+
+\datechange{2020/03/17}{至第三章源文件结构翻译完}
+
+\datechange{2020/03/06}{至第二章源码文件基础守则翻译完毕}
+
+
+\end{document}
